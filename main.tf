@@ -6,7 +6,7 @@ locals {
     for v in local.policies : jsondecode(v)
     if v != null || v != ""
   ]
-  version    = var.version
+  version    = var.policy_version
   statements = flatten([for policy in local.json_policies : policy.Statement])
 
   no_sid = [
@@ -28,7 +28,7 @@ locals {
 
 resource "aws_iam_policy" "default" {
   count = local.create_policy
-  name  = module.label.id
+  name  = var.name
   # name_prefix
   description = var.description
   policy      = jsonencode(local.merged_policy)
