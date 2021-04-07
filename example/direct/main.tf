@@ -1,5 +1,5 @@
 
 module "new_policy" {
-	source = "../../"
+  source = "../../"
 
 }
