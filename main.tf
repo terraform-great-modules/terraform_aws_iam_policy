@@ -2,9 +2,12 @@
 locals {
   create_policy = try(length(var.name), 0) == 0 ? 0 : 1
   policies      = concat(var.policy_documents, [var.policy_document])
-  json_policies = [for v in local.policies : jsondecode(v)]
-  version       = var.version
-  statements    = flatten([for policy in local.json_policies : policy.Statement])
+  json_policies = [
+    for v in local.policies : jsondecode(v)
+    if v != null || v != ""
+  ]
+  version    = var.version
+  statements = flatten([for policy in local.json_policies : policy.Statement])
 
   no_sid = [
     for policy in local.statements : policy
