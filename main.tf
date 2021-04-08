@@ -4,7 +4,11 @@ locals {
   policies      = concat(var.policy_documents, [var.policy_document])
   json_policies = [
     for v in local.policies : jsondecode(v)
-    if v != null || v != ""
+    if v != null && v != "" && can(jsondecode(v))
+  ]
+  json_policies_error = [
+    for v in local.policies : jsondecode(v)
+    if v != null && v != "" && can(jsondecode(v)) == false
   ]
   version    = var.policy_version
   statements = flatten([for policy in local.json_policies : policy.Statement])
@@ -23,6 +27,19 @@ locals {
   merged_policy = {
     Version   = local.version
     Statement = concat(local.no_sid, local.merged_sid)
+  }
+}
+
+resource "null_resource" "assert_something" {
+  count = length(local.json_policies_error)
+
+  provisioner "local-exec" {
+    command     = local.json_policies_error
+    interpreter = ["bash", "-c", "echo"]
+  }
+  provisioner "local-exec" {
+    command     = "false"
+    interpreter = ["bash", "-c"]
   }
 }
 
